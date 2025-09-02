@@ -1,90 +1,17 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-
-# Virtual environments
+# Environment and local artifacts
 .env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
 hr_env/
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Project specific
+# Generated documents and logs
 output/
-*.pdf
-*.log
-.env.local
-.env.production
+logs/
 
-# API keys and secrets
-.env
-*.key
-secrets.json
-
-# Temporary files
-*.tmp
-*.temp
-temp/
-tmp/
-
-# Generated documents (keep sample but ignore actual output)
-output/*/
-!output/sample/
-
-# Flask
-instance/
-.webassets-cache
-
-# Coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-cover/
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+dist/
+build/
+*.egg-info/

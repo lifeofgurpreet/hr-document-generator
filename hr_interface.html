@@ -92,12 +92,18 @@
             border-radius: 5px;
             display: none;
         }
-        .download-btn {
+        .download-btn, .preview-btn {
             background-color: #28a745;
             color: white;
             padding: 8px 16px;
             border: none;
             border-radius: 3px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        .preview-btn {
+            background-color: #17a2b8;
+        }
             text-decoration: none;
             display: inline-block;
             margin: 5px;
@@ -294,12 +300,54 @@
             linksDiv.innerHTML = '';
             
             documents.forEach(doc => {
-                const link = document.createElement('a');
-                link.href = doc.url;
-                link.className = 'download-btn';
-                link.download = doc.filename;
-                link.textContent = `📥 Download ${doc.type}`;
-                linksDiv.appendChild(link);
+                // Create download button that creates and downloads the file
+                const downloadBtn = document.createElement('button');
+                downloadBtn.className = 'download-btn';
+                downloadBtn.textContent = `📥 Download ${doc.type}`;
+                downloadBtn.onclick = () => {
+                    // Create a blob with the document content
+                    const blob = new Blob([doc.content], { type: 'text/markdown' });
+                    const url = window.URL.createObjectURL(blob);
+                    
+                    // Create a temporary link and trigger download
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = doc.filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+                };
+                
+                // Add preview button
+                const previewBtn = document.createElement('button');
+                previewBtn.className = 'preview-btn';
+                previewBtn.textContent = `👁️ Preview ${doc.type}`;
+                previewBtn.onclick = () => {
+                    // Show content in a modal or new window
+                    const newWindow = window.open('', '_blank');
+                    newWindow.document.write(`
+                        <html>
+                            <head>
+                                <title>${doc.filename}</title>
+                                <style>
+                                    body { font-family: Arial, sans-serif; margin: 20px; }
+                                    pre { white-space: pre-wrap; background: #f5f5f5; padding: 15px; border-radius: 5px; }
+                                </style>
+                            </head>
+                            <body>
+                                <h2>${doc.type}</h2>
+                                <pre>${doc.content}</pre>
+                            </body>
+                        </html>
+                    `);
+                };
+                
+                const buttonContainer = document.createElement('div');
+                buttonContainer.style.marginBottom = '10px';
+                buttonContainer.appendChild(downloadBtn);
+                buttonContainer.appendChild(previewBtn);
+                linksDiv.appendChild(buttonContainer);
             });
             
             resultsDiv.style.display = 'block';

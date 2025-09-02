@@ -1,17 +1,30 @@
 from flask import Flask, render_template, request, jsonify, send_file
 import json
 import os
-import openai
-from datetime import datetime
-import tempfile
+from datetime import datetime, timedelta
 from pathlib import Path
 import re
+from typing import Dict, Any
+try:
+    import openai
+    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+    openai_client = openai.OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
+except Exception:
+    openai_client = None
+from jinja2 import Environment, FileSystemLoader
 
 app = Flask(__name__)
 
 # Load configuration
 with open('config/ai-prompts.json', 'r') as f:
     AI_PROMPTS = json.load(f)
+with open('config/company-info.json', 'r') as f:
+    COMPANY_INFO = json.load(f)
+with open('config/job-roles.json', 'r') as f:
+    JOB_ROLES = json.load(f)
+
+# Jinja environment for fallback rendering
+jinja_env = Environment(loader=FileSystemLoader('templates'), autoescape=False, trim_blocks=True, lstrip_blocks=True)
 
 # Load templates
 def load_template(template_name):
@@ -19,27 +32,23 @@ def load_template(template_name):
     template_mapping = {
         'contract': 'contract.md',
         'confirmation': 'confirmation.md',
-        'roles': 'roles-responsibilities.md'
+        'roles': 'roles-responsibilities.md',
+        'roles-responsibilities': 'roles-responsibilities.md'
     }
-    
+
     template_filename = template_mapping.get(template_name, f'{template_name}.md')
     template_path = f'templates/{template_filename}'
-    
+
     with open(template_path, 'r', encoding='utf-8') as f:
         return f.read()
 
-# Initialize OpenAI client (you'll need to set OPENAI_API_KEY environment variable)
-openai.api_key = os.getenv('OPENAI_API_KEY')
-
-# Demo mode - if no API key, use sample data
-DEMO_MODE = not bool(os.getenv('OPENAI_API_KEY'))
+DEMO_MODE = openai_client is None
 
 def generate_document_content(template_content, employee_data, document_type):
     """Generate document content using OpenAI API or demo mode"""
-    
-    # If in demo mode, use sample data instead of OpenAI API
+    # If in demo mode, we won't use AI here (return None to trigger fallback)
     if DEMO_MODE:
-        return generate_demo_content(template_content, employee_data, document_type)
+        return None
     
     # Prepare the prompt based on document type
     if document_type == 'contract':
@@ -87,8 +96,8 @@ def generate_document_content(template_content, employee_data, document_type):
     """
     
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+        response = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are an HR document generator. Generate professional, complete documents based on the provided template and employee data."},
                 {"role": "user", "content": full_prompt}
@@ -96,67 +105,139 @@ def generate_document_content(template_content, employee_data, document_type):
             max_tokens=2000,
             temperature=0.3
         )
-        
+
         return response.choices[0].message.content.strip()
     except Exception as e:
         print(f"OpenAI API error: {e}")
         return None
 
-def generate_demo_content(template_content, employee_data, document_type):
-    """Generate demo content without OpenAI API"""
-    # Fill basic placeholders
-    content = fill_template_placeholders(template_content, employee_data)
-    
-    # Add some demo-specific content based on document type
-    if document_type == 'contract':
-        content += f"""
+def _normalize_kpis(kpi_breakdown: Dict[str, Any]) -> Dict[str, int]:
+    mapping = {"Vision": 0, "Delivery": 0, "Financial": 0, "Quality": 0, "LnD": 0, "ICO": 0}
+    for raw_key, val in (kpi_breakdown or {}).items():
+        key = raw_key.lower()
+        if "vision" in key:
+            mapping["Vision"] = val
+        elif "delivery" in key:
+            mapping["Delivery"] = val
+        elif "financial" in key or "fin" in key:
+            mapping["Financial"] = val
+        elif "quality" in key or "qua" in key:
+            mapping["Quality"] = val
+        elif "learning" in key or "lnd" in key:
+            mapping["LnD"] = val
+        elif "internal" in key or "ico" in key or "communications" in key:
+            mapping["ICO"] = val
+    return mapping
 
-## Demo Mode Notice
-This document was generated in demo mode without AI enhancement.
-For full AI-powered document generation, please set your OpenAI API key.
-
-Employee: {employee_data['employeeName']}
-Generated on: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
-"""
-    elif document_type == 'confirmation':
-        content += f"""
-
----
-*This confirmation letter was generated in demo mode. For AI-enhanced content, please set your OpenAI API key.*
-"""
-    elif document_type == 'roles':
-        content += f"""
-
----
-*Demo Mode: This document shows basic template filling. Enable AI enhancement by setting your OpenAI API key.*
-"""
-    
-    return content
-
-def fill_template_placeholders(template_content, employee_data):
-    """Fill basic placeholders in the template"""
-    # Basic placeholder replacement
-    replacements = {
-        '{{ employee_name }}': employee_data['employeeName'],
-        '{{ job_title }}': employee_data['jobTitle'],
-        '{{ team }}': employee_data['team'],
-        '{{ career_level }}': employee_data['careerLevel'],
-        '{{ salary }}': employee_data['salary'],
-        '{{ start_date }}': employee_data['startDate'],
-        '{{ reporting_to }}': employee_data['reportingTo'],
-        '{{ work_location }}': employee_data['workLocation'],
-        '{{ employee_id }}': employee_data['employeeId'],
-        '{{ job_description }}': employee_data['jobDescription'],
-        '{{ contract_date }}': datetime.now().strftime('%d/%m/%Y'),
-        '{{ company.name }}': 'Mereka',
-        '{{ company.registration_number }}': '202001012345'
+def _default_kpi_activities(area: str) -> str:
+    fallback = {
+        "Vision": [
+            "Participate in strategic planning sessions",
+            "Contribute to business model development",
+            "Engage in industry networking activities"
+        ],
+        "Delivery": [
+            "Execute assigned projects and deliverables",
+            "Manage project communications and coordination",
+            "Support community engagement initiatives"
+        ],
+        "Financial": [
+            "Assist in business development activities",
+            "Support proposal writing and funding efforts",
+            "Contribute to financial planning processes"
+        ],
+        "Quality": [
+            "Conduct quality checks and reviews",
+            "Collect and analyze feedback data",
+            "Generate performance reports"
+        ],
+        "LnD": [
+            "Attend training sessions and workshops",
+            "Participate in professional development programs",
+            "Engage in team feedback and review sessions"
+        ],
+        "ICO": [
+            "Utilize project management tools effectively",
+            "Maintain clear communication channels",
+            "Support team coordination and planning"
+        ]
     }
-    
-    content = template_content
-    for placeholder, value in replacements.items():
-        content = content.replace(placeholder, str(value))
-    
-    return content
+    return "\n".join([f"- {a}" for a in fallback.get(area, ["Perform assigned duties"])])
+
+def build_employee_context(data: Dict[str, Any]) -> Dict[str, Any]:
+    # Convert date format
+    start_date_iso = data['startDate']
+    try:
+        dt = datetime.strptime(start_date_iso, '%Y-%m-%d')
+        start_date = dt.strftime('%d/%m/%Y')
+    except Exception:
+        start_date = data['startDate']
+        dt = datetime.now()
+
+    end_date = (dt + timedelta(days=365)).strftime('%d/%m/%Y')
+
+    career_level = data['careerLevel']
+    team = data['team']
+    role_data = JOB_ROLES.get('career_levels', {}).get(career_level, JOB_ROLES.get('career_levels', {}).get('Associate', {}))
+    team_data = JOB_ROLES.get('teams', {}).get(team, {})
+
+    kpis = _normalize_kpis(role_data.get('kpi_breakdown', {}))
+    activities = {k: _default_kpi_activities(k) for k in kpis.keys()}
+
+    focus_areas = data.get('focusAreas') or ", ".join(team_data.get('focus_areas', []))
+    if isinstance(focus_areas, str):
+        focus_areas_list = [x.strip() for x in focus_areas.split(',') if x.strip()]
+    else:
+        focus_areas_list = team_data.get('focus_areas', [])
+
+    return {
+        'employee_name': data['employeeName'],
+        'employee_id': data['employeeId'],
+        'job_title': data['jobTitle'],
+        'team': team,
+        'career_level': career_level,
+        'salary': data['salary'],
+        'start_date': start_date,
+        'end_date': end_date,
+        'contract_date': start_date,
+        'reporting_to': data['reportingTo'],
+        'work_location': data['workLocation'],
+        'contract_term': COMPANY_INFO.get('contract_terms', {}).get('default_duration', '1-year full time contract'),
+
+        'company': COMPANY_INFO['company'],
+        'working_hours': COMPANY_INFO['working_hours'],
+        'overtime_policy': COMPANY_INFO['overtime_policy'],
+        'leave_entitlements': COMPANY_INFO['leave_entitlements'],
+        'benefits': COMPANY_INFO['benefits'],
+        'core_values': COMPANY_INFO['core_values'],
+        'termination': COMPANY_INFO['termination'],
+
+        'role_responsibilities': role_data.get('responsibilities', []),
+        'team_focus_areas': team_data.get('focus_areas', focus_areas_list),
+        'job_description': data.get('jobDescription', ''),
+        'kpi_breakdown': kpis,
+        'vision_activities': activities.get('Vision', ''),
+        'delivery_activities': activities.get('Delivery', ''),
+        'financial_activities': activities.get('Financial', ''),
+        'quality_activities': activities.get('Quality', ''),
+        'lnd_activities': activities.get('LnD', ''),
+        'ico_activities': activities.get('ICO', ''),
+
+        'confirmation_date': datetime.now().strftime('%d/%m/%Y'),
+        'effective_date': start_date,
+        'next_review_date': (dt + timedelta(days=90)).strftime('%d/%m/%Y'),
+        'key_responsibilities': role_data.get('responsibilities', [])[:5],
+        'hr_contact': {
+            'name': 'Alan Roy Antony',
+            'title': 'Human Resources, Senior Associate',
+            'email': 'hr@mereka.my',
+            'phone': '+60 3-1234 5678'
+        }
+    }
+
+def render_template_with_context(template_name: str, context: Dict[str, Any]) -> str:
+    template = jinja_env.get_template(template_name)
+    return template.render(**context)
 
 @app.route('/')
 def index():
@@ -182,34 +263,32 @@ def generate_documents():
         
         for doc_type in data['documents']:
             try:
-                # Load template
-                template_content = load_template(doc_type)
+                # Determine actual template key/name
+                template_key = 'roles-responsibilities' if doc_type == 'roles' else doc_type
+                template_content = load_template(template_key)
                 
                 # Generate content using OpenAI
-                generated_content = generate_document_content(template_content, data, doc_type)
-                
+                generated_content = generate_document_content(template_content, data, template_key)
+
+                # Build template context
+                context = build_employee_context(data)
+
                 if generated_content:
-                    # Fill any remaining placeholders
-                    final_content = fill_template_placeholders(generated_content, data)
-                    
-                    # Create temporary file
-                    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                    filename = f"{data['employeeName'].replace(' ', '_')}_{doc_type}_{timestamp}.md"
-                    
-                    # Ensure output directory exists
-                    os.makedirs('output', exist_ok=True)
-                    filepath = os.path.join('output', filename)
-                    
-                    with open(filepath, 'w', encoding='utf-8') as f:
-                        f.write(final_content)
-                    
-                    generated_documents.append({
-                        'type': doc_type.title(),
-                        'filename': filename,
-                        'url': f'/download/{filename}'
-                    })
+                    final_content = generated_content
                 else:
-                    return jsonify({'error': f'Failed to generate {doc_type} document'}), 500
+                    final_content = render_template_with_context(f"{template_key}.md", context)
+
+                # Create timestamp for filename
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                filename = f"{data['employeeName'].replace(' ', '_')}_{template_key}_{timestamp}.md"
+
+                # For Vercel deployment, return content directly instead of saving files
+                generated_documents.append({
+                    'type': template_key.replace('-', ' ').title(),
+                    'filename': filename,
+                    'content': final_content,
+                    'download_url': f'/download/{filename}'
+                })
                     
             except Exception as e:
                 print(f"Error generating {doc_type}: {e}")
@@ -227,11 +306,12 @@ def generate_documents():
 @app.route('/download/<filename>')
 def download_file(filename):
     try:
-        filepath = os.path.join('output', filename)
-        if os.path.exists(filepath):
-            return send_file(filepath, as_attachment=True)
-        else:
-            return jsonify({'error': 'File not found'}), 404
+        # For Vercel deployment, we'll need to handle this differently
+        # Since we can't save files, we'll return a message to use the content directly
+        return jsonify({
+            'message': 'For Vercel deployment, use the content field from the generate-documents response',
+            'filename': filename
+        })
     except Exception as e:
         return jsonify({'error': f'Download error: {str(e)}'}), 500
 
@@ -242,4 +322,6 @@ if __name__ == '__main__':
         print("Please set your OpenAI API key before running the application.")
         print("Example: export OPENAI_API_KEY='your-api-key-here'")
     
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    # For Vercel deployment, use the PORT environment variable
+    port = int(os.environ.get('PORT', 5001))
+    app.run(debug=True, host='0.0.0.0', port=port)

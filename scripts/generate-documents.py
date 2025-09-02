@@ -62,7 +62,7 @@ class HRDocumentGenerator:
         # Initialize Jinja2 environment
         self.jinja_env = Environment(
             loader=FileSystemLoader(str(self.templates_dir)),
-            autoescape=True,
+            autoescape=False,  # Markdown templates; avoid escaping
             trim_blocks=True,
             lstrip_blocks=True
         )
@@ -75,6 +75,26 @@ class HRDocumentGenerator:
             logger.warning(f"AI helper initialization failed: {e}")
             self.ai_helper = None
             self.ai_enabled = False
+
+    @staticmethod
+    def _normalize_kpis(kpi_breakdown: Dict[str, Any]) -> Dict[str, int]:
+        """Normalize KPI keys from config to simple keys used by templates"""
+        mapping = {"Vision": 0, "Delivery": 0, "Financial": 0, "Quality": 0, "LnD": 0, "ICO": 0}
+        for raw_key, val in (kpi_breakdown or {}).items():
+            key = raw_key.lower()
+            if "vision" in key:
+                mapping["Vision"] = val
+            elif "delivery" in key:
+                mapping["Delivery"] = val
+            elif "financial" in key or "fin" in key:
+                mapping["Financial"] = val
+            elif "quality" in key or "qua" in key:
+                mapping["Quality"] = val
+            elif "learning" in key or "lnd" in key:
+                mapping["LnD"] = val
+            elif "internal" in key or "ico" in key or "communications" in key:
+                mapping["ICO"] = val
+        return mapping
     
     def _load_config(self, filename: str) -> Dict[str, Any]:
         """Load configuration file"""
@@ -108,8 +128,9 @@ class HRDocumentGenerator:
         role_data = self.job_roles.get('career_levels', {}).get(career_level, {})
         team_data = self.job_roles.get('teams', {}).get(team, {})
         
-        # Generate KPI breakdown
-        kpi_breakdown = role_data.get('kpi_breakdown', {})
+        # Generate KPI breakdown (normalized)
+        raw_kpis = role_data.get('kpi_breakdown', {})
+        kpi_breakdown = self._normalize_kpis(raw_kpis)
         
         # Generate AI-enhanced content if available
         job_description = employee_info.get('job_description', '')
@@ -120,12 +141,52 @@ class HRDocumentGenerator:
                 self.company_info['company']['name'], responsibilities
             )
         
-        # Generate KPI activities
+        # Generate KPI activities (always provide content; fall back if AI disabled)
         kpi_activities = {}
-        if self.ai_enabled:
-            for area, percentage in kpi_breakdown.items():
-                activities = self.ai_helper.generate_kpi_activities(area, percentage, career_level)
-                kpi_activities[area] = activities
+        def fallback_kpi_activities(area: str, percentage: int) -> str:
+            fallback = {
+                "Vision": [
+                    "Participate in strategic planning sessions",
+                    "Contribute to business model development",
+                    "Engage in industry networking activities"
+                ],
+                "Delivery": [
+                    "Execute assigned projects and deliverables",
+                    "Manage project communications and coordination",
+                    "Support community engagement initiatives"
+                ],
+                "Financial": [
+                    "Assist in business development activities",
+                    "Support proposal writing and funding efforts",
+                    "Contribute to financial planning processes"
+                ],
+                "Quality": [
+                    "Conduct quality checks and reviews",
+                    "Collect and analyze feedback data",
+                    "Generate performance reports"
+                ],
+                "LnD": [
+                    "Attend training sessions and workshops",
+                    "Participate in professional development programs",
+                    "Engage in team feedback and review sessions"
+                ],
+                "ICO": [
+                    "Utilize project management tools effectively",
+                    "Maintain clear communication channels",
+                    "Support team coordination and planning"
+                ]
+            }
+            return "\n".join([f"- {a}" for a in fallback.get(area, ["Perform assigned duties"])])
+
+        for area, percentage in kpi_breakdown.items():
+            if self.ai_enabled:
+                try:
+                    activities = self.ai_helper.generate_kpi_activities(area, percentage, career_level)
+                except Exception:
+                    activities = fallback_kpi_activities(area, percentage)
+            else:
+                activities = fallback_kpi_activities(area, percentage)
+            kpi_activities[area] = activities
         
         # Build complete data structure
         data = {
@@ -158,6 +219,13 @@ class HRDocumentGenerator:
             'job_description': job_description,
             'kpi_breakdown': kpi_breakdown,
             'kpi_activities': kpi_activities,
+            # Expanded fields for template convenience
+            'vision_activities': kpi_activities.get('Vision', ''),
+            'delivery_activities': kpi_activities.get('Delivery', ''),
+            'financial_activities': kpi_activities.get('Financial', ''),
+            'quality_activities': kpi_activities.get('Quality', ''),
+            'lnd_activities': kpi_activities.get('LnD', ''),
+            'ico_activities': kpi_activities.get('ICO', ''),
             
             # Confirmation letter specific
             'confirmation_date': datetime.now().strftime('%d/%m/%Y'),
@@ -230,7 +298,14 @@ class HRDocumentGenerator:
         
         if self.ai_enabled:
             for doc_type, content in documents.items():
-                validation_results[doc_type] = self.ai_helper.validate_document(content, doc_type)
+                # Map doc types to validation focus
+                if doc_type == 'contract':
+                    key = 'legal_compliance'
+                elif doc_type == 'roles-responsibilities':
+                    key = 'policy_consistency'
+                else:
+                    key = 'completeness'
+                validation_results[doc_type] = self.ai_helper.validate_document(content, key)
         else:
             # Basic validation without AI
             for doc_type, content in documents.items():

@@ -26,9 +26,10 @@ class AIHelper:
         """Initialize AI helper with OpenAI API key"""
         self.api_key = api_key or os.getenv('OPENAI_API_KEY')
         if not self.api_key:
+            # Make initialization optional; callers can detect disabled AI
             raise ValueError("OpenAI API key is required. Set OPENAI_API_KEY environment variable.")
-        
-        openai.api_key = self.api_key
+
+        # OpenAI v1 style client
         self.client = openai.OpenAI(api_key=self.api_key)
         
         # Load AI prompts configuration
