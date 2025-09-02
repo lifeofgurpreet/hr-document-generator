@@ -1,0 +1,105 @@
+{
+  "career_levels": {
+    "Manager": {
+      "description": "Senior leadership role with strategic responsibilities",
+      "kpi_breakdown": {
+        "Vision (VIS)": 10,
+        "Delivery & Impact Creation (DEL)": 40,
+        "Financial (FIN)": 10,
+        "Quality (QUA)": 15,
+        "Learning Development & Personal Career Growth (LnD)": 15,
+        "Internal Communication & Management (ICO)": 10
+      },
+      "responsibilities": [
+        "Drive and implement business/department objectives, new initiatives",
+        "Identify new business opportunities, client propositions",
+        "Manage external partnerships",
+        "Lead and manage the team activities to deliver Company Strategic Plan",
+        "Oversee department branding and budgeting activities",
+        "Drive and support department/business growth",
+        "Establish relationships and manage contracts with clients/stakeholders",
+        "Possess and demonstrate knowledge of the Company's products and services",
+        "Gain understanding of market and competitive landscape",
+        "Establish and maintain high level of relevant domain knowledge",
+        "Synchronize business priorities with cross department",
+        "Propose and implement department best practices, processes and rules"
+      ]
+    },
+    "Associate": {
+      "description": "Mid-level professional with operational responsibilities",
+      "kpi_breakdown": {
+        "Vision (VIS)": 5,
+        "Delivery & Impact Creation (DEL)": 55,
+        "Financial (FIN)": 5,
+        "Quality (QUA)": 5,
+        "Internal Communications & Management (ICO)": 10,
+        "Learning & Development (LnD)": 20
+      },
+      "responsibilities": [
+        "Assist Direct Leader to strategize for business/department objectives",
+        "Lead and execute in the full spectrum of the job functions",
+        "Supervise and delegate tasks to interns (if any)",
+        "Serve as a business partner with stakeholders and cross department",
+        "Work on department objectives",
+        "Responsible for developing and implementing policies and systems",
+        "Improve overall efficiency of the department",
+        "Manage administration works and audit the work climate",
+        "Exercise independent judgment in handling day-to-day operations",
+        "Perform any other ad-hoc duties as assigned"
+      ]
+    },
+    "Senior Associate": {
+      "description": "Experienced professional with specialized expertise",
+      "kpi_breakdown": {
+        "Vision (VIS)": 8,
+        "Delivery & Impact Creation (DEL)": 45,
+        "Financial (FIN)": 8,
+        "Quality (QUA)": 12,
+        "Learning Development & Personal Career Growth (LnD)": 17,
+        "Internal Communication & Management (ICO)": 10
+      },
+      "responsibilities": [
+        "Lead specific projects and initiatives",
+        "Mentor junior team members",
+        "Develop specialized expertise in assigned areas",
+        "Contribute to strategic planning and decision-making",
+        "Manage complex stakeholder relationships",
+        "Drive innovation and process improvements",
+        "Represent the organization in external engagements"
+      ]
+    },
+    "Junior Associate": {
+      "description": "Entry-level professional with learning focus",
+      "kpi_breakdown": {
+        "Vision (VIS)": 3,
+        "Delivery & Impact Creation (DEL)": 60,
+        "Financial (FIN)": 3,
+        "Quality (QUA)": 3,
+        "Internal Communications & Management (ICO)": 8,
+        "Learning & Development (LnD)": 23
+      },
+      "responsibilities": [
+        "Support senior team members in daily operations",
+        "Learn and develop core competencies",
+        "Assist in project execution and delivery",
+        "Contribute to team objectives under supervision",
+        "Participate in training and development programs",
+        "Follow established processes and procedures"
+      ]
+    }
+  },
+  "teams": {
+    "Mereka": {
+      "description": "Main business unit",
+      "focus_areas": ["Education", "Innovation", "Community Engagement"]
+    },
+    "Marketing": {
+      "description": "Marketing and communications team",
+      "focus_areas": ["Brand Management", "Digital Marketing", "Content Creation"]
+    },
+    "Operations": {
+      "description": "Operational excellence team",
+      "focus_areas": ["Process Management", "Quality Assurance", "Efficiency"]
+    }
+  }
+}

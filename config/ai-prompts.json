@@ -1,0 +1,26 @@
+{
+  "contract_generation": {
+    "job_description": "Generate a detailed job description for a {role} position at {company_name}. The employee will be working in the {team} team. Key responsibilities should include: {responsibilities}. Focus on practical, actionable tasks that align with the company's mission of innovative education.",
+    "kpi_section": "Create a KPI breakdown section for a {career_level} role with the following percentages: {kpi_breakdown}. Each KPI area should have 2-3 specific, measurable activities that the employee will be responsible for.",
+    "review_contract": "Review this employment contract for completeness, clarity, and legal compliance. Ensure all sections are properly filled out and the language is professional and clear. Highlight any missing information or areas that need clarification."
+  },
+  "roles_responsibilities": {
+    "main_description": "Create a comprehensive roles and responsibilities document for a {career_level} position in the {team} team. The employee's main focus will be {focus_areas}. Include specific, measurable responsibilities that align with the company's strategic objectives.",
+    "kpi_breakdown": "Generate detailed KPI breakdowns for each strategic area with specific activities and measurable outcomes. The percentages are: {kpi_breakdown}. Each area should have clear, actionable items that the employee can track and achieve.",
+    "enhance_description": "Enhance this job description to be more specific and actionable. Add concrete examples of what success looks like in this role. Make it more engaging and clear for the new employee."
+  },
+  "confirmation_letter": {
+    "personalized": "Write a personalized confirmation letter for {employee_name} who has been appointed as {role} at {company_name}. The letter should be warm, professional, and encouraging. Mention their specific role and express confidence in their future contributions.",
+    "review_letter": "Review this confirmation letter for tone, clarity, and completeness. Ensure it's professional yet warm, and includes all necessary information about the appointment."
+  },
+  "content_improvement": {
+    "professional_tone": "Improve the professional tone of this document while maintaining its legal and formal nature. Make it more engaging and clear for the reader.",
+    "clarity_check": "Review this document for clarity and completeness. Identify any ambiguous language or missing information that should be addressed.",
+    "consistency_check": "Ensure consistency in terminology, formatting, and style throughout this document. Check for any inconsistencies in job titles, company references, or policy statements."
+  },
+  "validation": {
+    "legal_compliance": "Review this employment contract for legal compliance and completeness. Ensure all required sections are present and properly formatted according to Malaysian employment law.",
+    "policy_consistency": "Verify that all policies and procedures mentioned in this document are consistent with the company's standard policies and legal requirements.",
+    "completeness": "Check this document for completeness. Ensure all required fields are filled, all sections are properly completed, and no information is missing."
+  }
+}

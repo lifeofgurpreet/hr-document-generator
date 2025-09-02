@@ -1,0 +1,98 @@
+name: Deploy HR Document Generator
+
+on:
+  push:
+    branches: [ main ]
+  release:
+    types: [published]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Create deployment package
+      run: |
+        # Create a clean deployment directory
+        mkdir -p deploy
+        cp -r templates deploy/
+        cp -r config deploy/
+        cp -r scripts deploy/
+        cp app.py deploy/
+        cp start_hr_interface.py deploy/
+        cp requirements.txt deploy/
+        cp README.md deploy/
+        cp LICENSE deploy/
+        
+        # Create a simple deployment script
+        cat > deploy/deploy.sh << 'EOF'
+        #!/bin/bash
+        echo "Installing dependencies..."
+        pip install -r requirements.txt
+        
+        echo "Setting up environment..."
+        if [ -z "$OPENAI_API_KEY" ]; then
+            echo "Warning: OPENAI_API_KEY not set. Running in demo mode."
+        fi
+        
+        echo "Starting HR Document Generator..."
+        python start_hr_interface.py
+        EOF
+        
+        chmod +x deploy/deploy.sh
+        
+        # Create a zip file for easy download
+        cd deploy
+        zip -r ../hr-document-generator.zip .
+        cd ..
+    
+    - name: Upload deployment artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: hr-document-generator
+        path: hr-document-generator.zip
+    
+    - name: Create release
+      if: github.event_name == 'release'
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: |
+          HR Document Generator Release
+          
+          ## What's New
+          - AI-powered document generation
+          - Web interface for easy use
+          - Command-line tools for automation
+          - Template system for customization
+          
+          ## Installation
+          1. Download the zip file
+          2. Extract to your desired location
+          3. Run: `pip install -r requirements.txt`
+          4. Set your OpenAI API key: `export OPENAI_API_KEY="your-key"`
+          5. Start: `python start_hr_interface.py`
+          
+          ## Features
+          - Generate employment contracts
+          - Create job descriptions
+          - Produce confirmation letters
+          - Batch processing support
+          - PDF conversion
+        draft: false
+        prerelease: false

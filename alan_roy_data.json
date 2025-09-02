@@ -1,0 +1,19 @@
+{
+  "name": "Alan Roy",
+  "job_title": "Software Developer Intern",
+  "team": "Mereka",
+  "career_level": "Junior Associate",
+  "salary": "RM 2500",
+  "start_date": "01/04/2025",
+  "reporting_to": "Senior Software Developer",
+  "work_location": "Mereka, PUBLIKA & Remotely",
+  "employee_id": "ALAN001",
+  "job_description": "As a Software Developer Intern, Alan will support the development team in creating innovative educational technology solutions. He will learn modern development practices, contribute to real projects, and gain hands-on experience with cutting-edge technologies used in educational platforms.",
+  "focus_areas": [
+    "Web Development",
+    "Educational Technology",
+    "Software Testing",
+    "Code Documentation",
+    "Team Collaboration"
+  ]
+}

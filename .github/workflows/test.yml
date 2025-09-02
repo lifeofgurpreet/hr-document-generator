@@ -1,0 +1,76 @@
+name: Test HR Document Generator
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.9, 3.10, 3.11]
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run smoke tests
+      run: |
+        python test_system.py
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+    
+    - name: Test template rendering
+      run: |
+        python -c "
+        import json
+        from jinja2 import Template
+        
+        # Test template loading
+        with open('templates/contract.md', 'r') as f:
+            template = Template(f.read())
+        
+        # Test rendering with sample data
+        data = {
+            'employee_name': 'Test Employee',
+            'role': 'Test Role',
+            'salary': 'RM 5000'
+        }
+        
+        result = template.render(**data)
+        print('Template rendering successful')
+        "
+    
+    - name: Check configuration files
+      run: |
+        python -c "
+        import json
+        
+        # Test config files are valid JSON
+        configs = ['config/company-info.json', 'config/job-roles.json', 'config/ai-prompts.json']
+        
+        for config in configs:
+            with open(config, 'r') as f:
+                json.load(f)
+            print(f'✓ {config} is valid JSON')
+        "

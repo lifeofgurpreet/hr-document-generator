@@ -1,0 +1,66 @@
+{
+  "company": {
+    "name": "MEREKA INNOVATIVE EDUCATION SDN BHD",
+    "registration_number": "1239397-T",
+    "address": "Mereka, PUBLIKA",
+    "email": "finance@mereka.my",
+    "website": "https://mereka.my"
+  },
+  "working_hours": {
+    "general": "Monday – Sunday, 10 am to 8 pm",
+    "weekly_hours": 40,
+    "start_time": "10:00 AM"
+  },
+  "overtime_policy": {
+    "replacement_leave": {
+      "< 4 hours": "1 to 3 Off-hours the next day",
+      "4 hours": "Half-day Leave",
+      "8 hours": "1 Full-day Leave"
+    }
+  },
+  "leave_entitlements": {
+    "annual_leave": 18,
+    "medical_leave": 14,
+    "hospitalization_leave": 60,
+    "paternity_leave": 30,
+    "maternity_leave": 98,
+    "compassionate_leave": 10,
+    "study_leave": 60
+  },
+  "benefits": {
+    "wellness_claim": "RM500 annually",
+    "epf": true,
+    "socso": true,
+    "eis": true
+  },
+  "core_values": [
+    {
+      "name": "Drive Change With Purpose",
+      "description": "We set clear, intentional goals that drive meaningful and sustainable progress for our clients, communities, and the environment."
+    },
+    {
+      "name": "Innovate As Standard",
+      "description": "We approach every challenge with creativity, consistently pushing boundaries to deliver results."
+    },
+    {
+      "name": "Foster Authentic Connections",
+      "description": "We cultivate trust through honest and transparent interactions, ensuring integrity remains at the heart of all we undertake."
+    },
+    {
+      "name": "Redefine Resilience",
+      "description": "We embody adaptability and strength, turning challenges into opportunities for growth and excellence."
+    },
+    {
+      "name": "Champion Growth For All",
+      "description": "We are committed to collective success, advancing together toward a prosperous and sustainable future for all."
+    }
+  ],
+  "termination": {
+    "notice_period": "90 days",
+    "immediate_termination": "Violation of Code of Conduct"
+  },
+  "contract_terms": {
+    "default_duration": "1-year full time contract",
+    "extension_basis": "Performance and organizational needs"
+  }
+}
