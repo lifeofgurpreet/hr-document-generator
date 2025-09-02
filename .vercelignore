@@ -1,0 +1,53 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+hr_env/
+
+# Heavy dependencies
+output/
+*.pdf
+*.log
+
+# Development files
+test_system.py
+setup.sh
+start_hr_interface.py
+scripts/
+sample/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation
+README.md
+DEPLOYMENT.md
+LICENSE
+*.md
+
+# Docker
+Dockerfile
+.dockerignore
+
+# GitHub Actions
+.github/
+
+# Requirements (use requirements-vercel.txt instead)
+requirements.txt
