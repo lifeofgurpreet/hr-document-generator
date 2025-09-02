@@ -7,7 +7,7 @@ An AI-powered HR document generation system that creates personalized employment
 ### Option 1: Web Interface (Recommended)
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/hr-document-generator.git
+git clone https://github.com/lifeofgurpreet/hr-document-generator.git
 cd hr-document-generator
 
 # Install dependencies
@@ -171,6 +171,16 @@ python test_system.py
 ## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🌐 GitHub Repository
+
+**Repository**: https://github.com/lifeofgurpreet/hr-document-generator
+
+**Live Demo**: Clone the repository and run `python start_hr_interface.py` to start the web interface
+
+**Issues**: Report bugs or request features on [GitHub Issues](https://github.com/lifeofgurpreet/hr-document-generator/issues)
+
+**Releases**: Download the latest release from [GitHub Releases](https://github.com/lifeofgurpreet/hr-document-generator/releases)
 
 ## 🆘 Support
 
